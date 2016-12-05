@@ -1,10 +1,20 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class Expire : MonoBehaviour {
 
-    private Rigidbody2D rb2d;
+    public float velocityCutoff;
+    public float scaleCutoff;
+    public float timeCutoff;
+    public bool expireOnVelocity = false;
+    public bool expireOnScale = false;
+    public bool expireOnTime = false;
 
+    Vector2 tempVelocity = new Vector2();
+    Vector2 tempScale = new Vector2();
+    float timer;
+
+    Rigidbody2D rb2d;
+    
     // Use this for initialization
     void Start ()
     {
@@ -15,10 +25,39 @@ public class Expire : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        if(rb2d.velocity == new Vector2(0,0))
+        if(expireOnVelocity)
         {
-            Destroy(gameObject);
+            tempVelocity = rb2d.velocity;
+
+            if (tempVelocity.x < 0)
+            {
+                tempVelocity.x *= -1;
+            }
+
+            if (tempVelocity.y < 0)
+            {
+                tempVelocity.y *= -1;
+            }
+
+            if (tempVelocity.x <= velocityCutoff && tempVelocity.y <= velocityCutoff)
+            {
+                Destroy(gameObject);
+            }
         }
 
+        if(expireOnScale)
+        {
+            tempScale = transform.localScale;
+
+            if(tempScale.x >= scaleCutoff || tempScale.y >= scaleCutoff)
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        if(expireOnTime)
+        {
+
+        }
 	}
 }
