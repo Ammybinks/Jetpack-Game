@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class MovementManager : MonoBehaviour {
+public class MovementManager : MonoBehaviour
+{
 
     [SerializeField]
     float speed;
@@ -13,17 +14,6 @@ public class MovementManager : MonoBehaviour {
     LayerMask layerMask;
     [SerializeField]
     float raySize;
-
-    static MovementManager instance;
-
-    private Collider2D collider;
-    public static Collider2D Collider
-    {
-        get
-        {
-            return instance.collider;
-        }
-    }
 
     float tempJumpSpeed;
     float defaultDrag;
@@ -43,25 +33,20 @@ public class MovementManager : MonoBehaviour {
 
     RaycastHit2D hit;
 
-    public static Vector2 movementSpeed
-    {
-        get
-        {
-            return instance.GetComponent<Rigidbody2D>().velocity;
-        }
-    }
-
     // Use this for initialization
-    void Awake ()
+    void Start()
     {
-        instance = this;
-
-        collider = GetComponent<Collider2D>();
-
         //Get and store a reference to the Rigidbody2D component so that we can access it.
         rb2d = GetComponent<Rigidbody2D>();
 
         defaultDrag = rb2d.drag;
+
+        Flamethrower.Accelerate += Accelerate;
+
+        Beam.Accelerate += Accelerate;
+
+        GrappleHit.AttachTether += AttachTether;
+        Grapple.BreakTether += BreakTether;
     }
 
     //FixedUpdate is called at a fixed interval and is independent of frame rate. Put physics code here.
@@ -198,24 +183,24 @@ public class MovementManager : MonoBehaviour {
         rightKeyDown = false;
     }
 
-    public static void AttachTether(Rigidbody2D rb2d)
+    private void AttachTether(Rigidbody2D rb2d)
     {
-        instance.hinge = instance.gameObject.AddComponent<HingeJoint2D>();
+        hinge = gameObject.AddComponent<HingeJoint2D>();
 
-        instance.hinge.connectedBody = rb2d;
+        hinge.connectedBody = rb2d;
 
-        instance.tethered = true;
+        tethered = true;
     }
 
-    public static void BreakTether()
+    private void BreakTether()
     {
-        Destroy(instance.hinge);
+        Destroy(hinge);
 
-        instance.tethered = false;
+        tethered = false;
     }
 
-    public static void Accelerate(Vector2 velocity)
+    private void Accelerate(Vector2 velocity)
     {
-        instance.rb2d.velocity += velocity;
+        rb2d.velocity += velocity;
     }
 }

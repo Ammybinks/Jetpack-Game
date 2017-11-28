@@ -3,6 +3,9 @@ using System.Collections;
 
 public class Beam : WeaponBase
 {
+    public delegate void AcceleratePlayer(Vector2 Velocity);
+    public static event AcceleratePlayer Accelerate;
+
     [SerializeField]
     float turnSpeed;
     [SerializeField]
@@ -24,23 +27,39 @@ public class Beam : WeaponBase
     RaycastHit2D hit2;
 
     Vector3 tempScale;
-    
+
+    protected override void CheckIndex(int val)
+    {
+        if (val == abilityIndex - 1)
+        {
+            AbilityManager.BeginFiring += BeginFiring;
+            AbilityManager.Fire += Fire;
+            AbilityManager.StopFiring += StopFiring;
+            ManaManager.SetMana += CheckMana;
+        }
+        else
+        {
+            AbilityManager.BeginFiring -= BeginFiring;
+            AbilityManager.Fire -= Fire;
+            AbilityManager.StopFiring -= StopFiring;
+            ManaManager.SetMana -= CheckMana;
+        }
+    }
+
     protected override float BeginFiring(float radians)
     {
         if (castable && timer == 0)
         {
             //Create an instance of the projectile.
-            projectileInstance = Instantiate(projectile, transform.position, Quaternion.Euler(new Vector3(0, 0, 0))) as Rigidbody2D;
+            bulletInstance = Instantiate(projectile, transform.position, Quaternion.Euler(new Vector3(0, 0, 0))) as Rigidbody2D;
 
-            projectileInstance.transform.localScale = new Vector3(0, 1);
+            bulletInstance.transform.localScale = new Vector3(0, 1);
 
-            projectileInstance.transform.parent = transform.parent;
+            bulletInstance.transform.parent = transform.parent;
 
             tempRecoil = recoil;
 
             PhysicsCalc(radians);
-
-            Raycast();
 
             localRadians = radians;
 
@@ -52,7 +71,7 @@ public class Beam : WeaponBase
 
     protected override float Fire(float radians)
     {
-        if (castable && projectileInstance != null)
+        if (castable && bulletInstance != null)
         {
             diff = ((radians * Mathf.Rad2Deg)) - ((localRadians * Mathf.Rad2Deg));
 
@@ -104,9 +123,9 @@ public class Beam : WeaponBase
 
     protected override void StopFiring()
     {
-        if(projectileInstance)
+        if(bulletInstance)
         {
-            Destroy(projectileInstance.gameObject);
+            Destroy(bulletInstance.gameObject);
         }
 
         timer = cooldown;
@@ -118,38 +137,34 @@ public class Beam : WeaponBase
         recoilVelocity = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * (tempRecoil * -1);
 
         //Set the rotation of the projectile
-        Vector3 temp = projectileInstance.gameObject.transform.rotation.eulerAngles;
+        Vector3 temp = bulletInstance.gameObject.transform.rotation.eulerAngles;
 
         rotation = radians * Mathf.Rad2Deg;
 
         temp.z = rotation;
 
-        projectileInstance.gameObject.transform.rotation = Quaternion.Euler(temp);
-        projectileInstance.gameObject.transform.position = transform.position;
+        bulletInstance.gameObject.transform.rotation = Quaternion.Euler(temp);
+        bulletInstance.gameObject.transform.position = transform.position;
 
-        //Accelerate(recoilVelocity);
-        MovementManager.Accelerate(recoilVelocity);
+        Accelerate(recoilVelocity);
 
-        if(decay != -1)
-        {
-            //Decay recoil velocity
-            tempRecoil *= decay;
-        }
+        //Decay recoil velocity
+        tempRecoil *= decay;
     }
 
     void Raycast()
     {
         //Raycast 1
-        hit = Physics2D.Raycast(projectileInstance.transform.position, projectileInstance.transform.right, Mathf.Infinity, hitMask);
-        Debug.DrawRay(projectileInstance.transform.position, projectileInstance.transform.right, Color.red);
+        hit = Physics2D.Raycast(bulletInstance.transform.position, bulletInstance.transform.right, Mathf.Infinity, hitMask);
+        Debug.DrawRay(bulletInstance.transform.position, bulletInstance.transform.right, Color.red);
         if (hit)
         {
             //Set scale of projectile
-            tempScale = projectileInstance.transform.localScale;
+            tempScale = bulletInstance.transform.localScale;
 
             tempScale.x = hit.distance * 100;
             
-            projectileInstance.transform.localScale = tempScale;
+            bulletInstance.transform.localScale = tempScale;
 
             //Expel mana away from collision
             for (int i = 0; i < manaCost; i++)

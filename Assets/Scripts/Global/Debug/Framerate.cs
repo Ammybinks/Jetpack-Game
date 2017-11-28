@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Framerate : MonoBehaviour
-{
+public class Framerate : MonoBehaviour {
 
     Text text;
 

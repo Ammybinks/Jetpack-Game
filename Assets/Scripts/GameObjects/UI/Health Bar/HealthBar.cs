@@ -7,10 +7,10 @@ public class HealthBar : MonoBehaviour
     float width;
     
     [SerializeField]
-    private float maxValue;
+    private int maxValue;
 
     [SerializeField]
-    public float value;
+    public int value;
 
     float maxWidth;
 
@@ -26,8 +26,8 @@ public class HealthBar : MonoBehaviour
         maxWidth = (transform.parent.transform as RectTransform).sizeDelta.x;
         width = (transform.parent.transform as RectTransform).sizeDelta.x;
 
-        HealthManager.SetHealth += SetValue;
-        HealthManager.SetMaxHealth += SetMaxValue;
+        TempHurt.SetHealth += SetValue;
+        TempHurt.SetMaxHealth += SetMaxValue;
 	}
 	
 	// Update is called once per frame
@@ -55,14 +55,14 @@ public class HealthBar : MonoBehaviour
         transform.sizeDelta = temp;
     }
     
-    private void SetValue(float change)
+    private void SetValue(int change)
     {
         value = change;
         
         SetWidth(value, maxValue, maxWidth);
     }
 
-    private void SetMaxValue(float change)
+    private void SetMaxValue(int change)
     {
         maxValue = change;
 

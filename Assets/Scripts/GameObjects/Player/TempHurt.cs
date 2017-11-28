@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Temphurt : MonoBehaviour {
+public class TempHurt : MonoBehaviour {
 
     public delegate void ChangeHealth(int val);
     public static event ChangeHealth SetHealth;

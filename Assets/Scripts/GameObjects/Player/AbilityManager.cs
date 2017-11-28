@@ -1,12 +1,10 @@
 ﻿using UnityEngine;
-using UnityEngine.Events;
 using System.Collections;
 
 public class AbilityManager : MonoBehaviour {
 
     public delegate void EventFlag();
     public static event EventFlag StopFiring;
-    public static event EventFlag CheckMana;
 
     public delegate float SetFiring(float radians);
     public static event SetFiring Fire;
@@ -39,10 +37,6 @@ public class AbilityManager : MonoBehaviour {
 
     private float mana;
 
-    private int scrollIndex;
-    private bool mousePressed;
-    private bool mouseDown;
-
     // Use this for initialization
     void Start ()
     {
@@ -63,44 +57,21 @@ public class AbilityManager : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        if ((scrollIndex = (int)Input.GetAxis("Mouse ScrollWheel")) != 0)
+        int temp2 = (int)Input.GetAxis("Mouse ScrollWheel");
+        if (Input.GetAxis("Mouse ScrollWheel") != 0)
         {
-            int i = 0;
-        }
-        
+            ability += (int)(Input.GetAxis("Mouse ScrollWheel") * 10);
 
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            mousePressed = true;
-        }
-        else if (Input.GetMouseButton(0))
-        {
-            mouseDown = true;
-        }
-        
-        if(!Input.GetMouseButton(0))
-        {
-            mouseDown = false;
-        }
-    }
-
-    private void FixedUpdate()
-    {
-        if (scrollIndex != 0)
-        {
-            ability += scrollIndex * 10;
-
-            if (ability < 0)
+            if(ability < 0)
             {
                 ability = abilityCount + ability;
             }
-            if (ability > (abilityCount - 1))
+            if(ability > (abilityCount - 1))
             {
                 ability = 0 + (ability - abilityCount);
             }
-
-            if (isFiring)
+            
+            if(isFiring)
             {
                 isFiring = false;
 
@@ -114,18 +85,11 @@ public class AbilityManager : MonoBehaviour {
             {
                 SetIndex(ability);
             }
-
-            CheckMana();
         }
 
-        if(mousePressed)
+        if (Input.GetMouseButtonDown(0))
         {
-            float temp = 0;
-
-            if (BeginFiring != null)
-            {
-                temp = BeginFiring(FireSetup());
-            }
+            float temp = BeginFiring(FireSetup());
 
             if (temp > 0)
             {
@@ -136,16 +100,14 @@ public class AbilityManager : MonoBehaviour {
 
                 ChangeMana(-temp);
             }
-
-            mousePressed = false;
         }
-        else if(mouseDown)
+        else if (Input.GetMouseButton(0))
         {
             if (Fire != null)
             {
                 float temp = Fire(FireSetup());
 
-                if (temp > 0)
+                if(temp > 0)
                 {
                     if (!isFiring)
                     {
@@ -156,11 +118,11 @@ public class AbilityManager : MonoBehaviour {
                 }
                 else if (temp == 0)
                 {
-                    if (isFiring)
+                    if(isFiring)
                     {
                         isFiring = false;
 
-                        if (StopFiring != null)
+                        if(StopFiring != null)
                         {
                             StopFiring();
                         }
@@ -168,17 +130,17 @@ public class AbilityManager : MonoBehaviour {
                 }
                 else
                 {
-                    if (!isFiring)
+                    if(!isFiring)
                     {
                         isFiring = true;
                     }
                 }
             }
         }
-
-        if(!mouseDown)
+        
+        if(!Input.GetMouseButton(0))
         {
-            if (isFiring)
+            if(isFiring)
             {
                 isFiring = false;
 
@@ -189,7 +151,7 @@ public class AbilityManager : MonoBehaviour {
             }
         }
     }
-
+    
     private float FireSetup()
     {
         //Save the current position of the mouse in relation to the main camera.

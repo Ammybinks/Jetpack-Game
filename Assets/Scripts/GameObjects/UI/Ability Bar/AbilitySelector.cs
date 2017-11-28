@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class AbilitySelector : MonoBehaviour
-{
+public class AbilitySelector : MonoBehaviour {
 
     private Vector3 origin;
 

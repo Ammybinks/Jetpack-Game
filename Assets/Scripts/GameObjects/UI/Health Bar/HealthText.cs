@@ -7,16 +7,16 @@ public class HealthText : MonoBehaviour
     Text text;
 
     [SerializeField]
-    private float value;
+    private int value;
     [SerializeField]
-    private float maxValue;
+    private int maxValue;
 
 	// Use this for initialization
 	void Awake () {
         text = GetComponent<Text>();
         
-        HealthManager.SetHealth += SetValue;
-        HealthManager.SetMaxHealth += SetMaxValue;
+        TempHurt.SetHealth += SetValue;
+        TempHurt.SetMaxHealth += SetMaxValue;
     }
 
     private void SetText()
@@ -24,14 +24,14 @@ public class HealthText : MonoBehaviour
         text.text = value + "/" + maxValue;
     }
 
-    private void SetValue(float change)
+    private void SetValue(int change)
     {
         value = change;
 
         SetText();
     }
 
-    private void SetMaxValue(float change)
+    private void SetMaxValue(int change)
     {
         maxValue = change;
 

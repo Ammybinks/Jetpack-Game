@@ -2,32 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Mana : MonoBehaviour, IDestroyable {
-    
-    public delegate void ChangeFloat(float val);
-    public static event ChangeFloat ChangeMana;
+public class Mana : MonoBehaviour {
 
+    public delegate BoxCollider2D[] GetCollider();
+    public static event GetCollider RequestCollider;
+    
     [SerializeField]
     float sleepTime;
     [SerializeField]
-    float absorbRadius;
-    [SerializeField]
     float absorbSpeed;
-    [SerializeField]
-    LayerMask layerMask;
 
     Rigidbody2D rb2d;
-    
-    Collider2D hit;
+
+    BoxCollider2D collider;
+
+    BoxCollider2D[] playerColliders;
 
     float timer;
-    public float Timer
-    {
-        get
-        {
-            return timer;
-        }
-    }
 
     int affectedIndex;
 
@@ -42,10 +33,19 @@ public class Mana : MonoBehaviour, IDestroyable {
     void Awake ()
     {
         rb2d = GetComponent<Rigidbody2D>();
-        
-        Physics2D.IgnoreCollision(GetComponent<BoxCollider2D>(), MovementManager.Collider, true);
 
-        Magnet.PullMana += Absorb;
+        collider = GetComponent<BoxCollider2D>();
+        if(RequestCollider != null)
+        {
+            playerColliders = RequestCollider();
+        }
+
+        foreach(BoxCollider2D playerCollider in playerColliders)
+        {
+            Physics2D.IgnoreCollision(collider, playerCollider);
+        }
+
+        ManaManager.PullMana += Absorb;
 
         timer = sleepTime;
 	}
@@ -59,30 +59,33 @@ public class Mana : MonoBehaviour, IDestroyable {
         }
         else
         {
-            if (hit = Physics2D.OverlapCircle(transform.position, absorbRadius, layerMask))
+            if (playerColliders != null)
             {
-                Absorb(hit.transform.position);
+                foreach (BoxCollider2D playerCollider in playerColliders)
+                {
+                    Physics2D.IgnoreCollision(collider, playerCollider, false);
+                }
+
+                playerColliders = null;
             }
         }
-    }
+	}
 
-    void Absorb(Vector2 point)
+    private void Absorb(Vector2 point, ArrayList affected)
     {
-        positionY = point.y - transform.position.y;
-        positionX = point.x - transform.position.x;
+        if ((affectedIndex = affected.IndexOf(name)) != -1)
+        {
+            positionY = point.y - transform.position.y;
+            positionX = point.x - transform.position.x;
 
-        //Get the angle between the mouse and camera in radians.
-        radians = (Mathf.Atan2(positionY, positionX));
+            //Get the angle between the mouse and camera in radians.
+            radians = (Mathf.Atan2(positionY, positionX));
 
-        velocity = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * absorbSpeed;
+            velocity = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * absorbSpeed;
 
-        rb2d.velocity += velocity;
-    }
+            rb2d.velocity += velocity;
 
-    public void Kill()
-    {
-        Magnet.PullMana -= Absorb;
-
-        Destroy(gameObject);
+            affected.RemoveAt(affectedIndex);
+        }
     }
 }

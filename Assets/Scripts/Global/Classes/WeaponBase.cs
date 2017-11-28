@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class WeaponBase : MonoBehaviour, IDestroyable
+public class WeaponBase : MonoBehaviour
 {
     [SerializeField]
     protected int abilityIndex;
@@ -28,7 +28,7 @@ public class WeaponBase : MonoBehaviour, IDestroyable
     protected Vector2 recoilVelocity;
     protected Vector2 manaVelocity;
 
-    protected Rigidbody2D projectileInstance;
+    protected Rigidbody2D bulletInstance;
     protected Rigidbody2D manaInstance;
 
     protected float timer;
@@ -56,6 +56,7 @@ public class WeaponBase : MonoBehaviour, IDestroyable
 
     protected virtual void Awake()
     {
+        //AbilityManager.Fire += Fire;
         AbilityManager.SetIndex += CheckIndex;
     }
 
@@ -72,7 +73,7 @@ public class WeaponBase : MonoBehaviour, IDestroyable
         }
     }
 
-    public virtual void CheckIndex(int val)
+    protected virtual void CheckIndex(int val)
     {
         if (val == abilityIndex - 1)
         {
@@ -115,15 +116,5 @@ public class WeaponBase : MonoBehaviour, IDestroyable
     protected virtual void StopFiring()
     {
 
-    }
-
-    public void test(string word)
-    {
-
-    }
-
-    public void Kill()
-    {
-        Destroy(gameObject);
     }
 }

@@ -7,22 +7,35 @@ public class ManaManager : MonoBehaviour {
     public delegate void SetValue(float val);
     public static event SetValue SetMana;
     public static event SetValue SetMaxMana;
-    
+
+    public delegate void AbsorbMana(Vector2 point, ArrayList affected);
+    public static event AbsorbMana PullMana;
+
     [SerializeField]
     private float mana;
     [SerializeField]
     private int maxMana;
     [SerializeField]
     private float absorbRadius;
-    
+    [SerializeField]
+    private LayerMask layerMask;
+
+    Collider2D collider;
+    Collider2D[] hitColliders;
+
+    ArrayList affected = new ArrayList();
+
     // Use this for initialization
     void Start ()
     {
-        AbilityManager.CheckMana += ChangeMana;
+        Mana.RequestCollider += GetCollider;
+
+        TempHurt.AddMaxMana += ChangeMaxMana;
 
         AbilityManager.ChangeMana += ChangeMana;
-        Mana.ChangeMana += ChangeMana;
-        
+
+        collider = GetComponent<Collider2D>();
+
         if (SetMana != null)
         {
             SetMana(mana);
@@ -36,8 +49,38 @@ public class ManaManager : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
+        affected.Clear();
+
+        hitColliders = Physics2D.OverlapCircleAll(transform.position, absorbRadius, layerMask);
+
+        for(int i = 0; i < hitColliders.Length; i++)
+        {
+            if (hitColliders[i].tag == "Mana" && Physics2D.GetIgnoreCollision(collider, hitColliders[i]))
+            {
+                affected.Add(hitColliders[i].name);
+            }
+            else
+            {
+                Debug.Log("Eey, summat's wrong 'ere");
+            }
+        }
+
+        if(affected.Count != 0)
+        {
+            PullMana(transform.position, affected);
+        }
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "Mana")
+        {
+            ChangeMana(1);
+
+            Destroy(collision.gameObject);
+        }
+    }
+    
     //private void OnCollisionEnter2D(Collision2D collision)
     //{
     //    Debug.Log("Collided!");
@@ -50,25 +93,6 @@ public class ManaManager : MonoBehaviour {
     //    }
     //}
 
-    void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.tag == "Mana")
-        {
-            Mana tempMana = collision.GetComponent<Mana>();
-
-            if(tempMana.Timer <= 0)
-            {
-                ChangeMana(1);
-
-                tempMana.Kill();
-            }
-        }
-    }
-
-    private void ChangeMana()
-    {
-        SetMana(mana);
-    }
     private void ChangeMana(float change)
     {
         mana += change;
